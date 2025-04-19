@@ -14,10 +14,22 @@ $totalPengeluaran = mysqli_fetch_assoc($resultPengeluaran)['total_pengeluaran'] 
 // Calculate profit
 $profit = $totalPemasukan - $totalPengeluaran;
 
+// Query omzet (total penjualan only)
+$queryOmzet = "SELECT SUM(nominal) AS total_omzet FROM tb_pemasukan WHERE kategori = 'Penjualan'";
+$resultOmzet = mysqli_query($koneksi, $queryOmzet);
+$omzet = mysqli_fetch_assoc($resultOmzet)['total_omzet'] ?? 0;
+
+// Calculate laba (profit after pengeluaran)
+$laba = $profit;
+
 // Query total stok
 $queryStok = "SELECT SUM(stok) AS total_stok FROM tb_stok_barang";
 $resultStok = mysqli_query($koneksi, $queryStok);
 $totalStok = mysqli_fetch_assoc($resultStok)['total_stok'] ?? 0;
+
+// Calculate porsi terjual (number of portions sold)
+$hargaPerPorsi = 12000; // Fixed price per portion
+$porsiTerjual = floor($totalPemasukan / $hargaPerPorsi);
 
 // Fetch sales data dynamically based on date range
 $startDate = $_GET['start_date'] ?? date('Y-m-01'); // Default to the first day of the current month
@@ -92,11 +104,11 @@ while ($row = mysqli_fetch_assoc($resultLowStock)) {
       <!--begin::Row - Statistik Box-->
       <div class="row">
         <!-- Pemasukan -->
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-12">
           <div class="small-box text-bg-success">
             <div class="inner">
               <h3>Rp <?= number_format($totalPemasukan, 0, ',', '.') ?></h3>
-              <p>Total Pemasukan</p>
+              <p>Total Pemasukan Keseluruhan</p>
             </div>
             <i class="bi bi-graph-up fs-1 small-box-icon"></i>
             <a href="menu/pemasukan.php" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
@@ -106,11 +118,11 @@ while ($row = mysqli_fetch_assoc($resultLowStock)) {
         </div>
 
         <!-- Pengeluaran -->
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-12">
           <div class="small-box text-bg-danger">
             <div class="inner">
               <h3>Rp <?= number_format($totalPengeluaran, 0, ',', '.') ?></h3>
-              <p>Total Pengeluaran</p>
+              <p>Total Pengeluaran Keseluruhan</p>
             </div>
             <i class="bi bi-cash-stack fs-1 small-box-icon"></i>
             <a href="menu/pengeluaran.php" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
@@ -119,9 +131,25 @@ while ($row = mysqli_fetch_assoc($resultLowStock)) {
           </div>
         </div>
 
-        <!-- Profit -->
-        <div class="col-lg-3 col-6">
+        <!-- Omset -->
+        <div class="col-lg-4 col-12">
           <div class="small-box text-bg-primary">
+            <div class="inner">
+              <h3>Rp <?= number_format($omzet, 0, ',', '.') ?></h3>
+              <p>Total Omset Penjualan</p>
+            </div>
+            <i class="bi bi-bar-chart-line fs-1 small-box-icon"></i>
+            <a href="#" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+              Detail <i class="bi bi-link-45deg"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Profit --> 
+        <div class="col-lg-4 col-12">
+          <div class="small-box text-bg-secondary">
             <div class="inner">
               <h3>Rp <?= number_format($profit, 0, ',', '.') ?></h3>
               <p>Total Profit</p>
@@ -133,8 +161,22 @@ while ($row = mysqli_fetch_assoc($resultLowStock)) {
           </div>
         </div>
 
+        <!-- Porsi Terjual -->
+        <div class="col-lg-4 col-12">
+          <div class="small-box text-bg-info">
+            <div class="inner">
+              <h3><?= number_format($porsiTerjual, 0, ',', '.') ?></h3>
+              <p>Porsi Terjual</p>
+            </div>
+            <i class="bi bi-pie-chart fs-1 small-box-icon"></i>
+            <a href="#" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+              Detail <i class="bi bi-link-45deg"></i>
+            </a>
+          </div>
+        </div>
+
         <!-- Stok -->
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-12">
           <div class="small-box text-bg-warning">
             <div class="inner">
               <h3><?= number_format($totalStok, 0, ',', '.') ?></h3>
